@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Camera Live Stream Test</title>
+    <style>
+      body {
+        background: #121212;
+        color: white;
+        text-align: center;
+        padding: 2rem;
+        font-family: sans-serif;
+      }
+      canvas {
+        width: 100%;
+        max-width: 800px;
+        height: auto;
+        border: 2px solid #444;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Live Camera Feed</h1>
+    <canvas id="videoCanvas" width="800" height="400"></canvas>
+    <!-- <canvas id="videoCanvas" width="1280" height="720"></canvas> -->
+
+    <!-- ✅ Self-hosted JSMpeg -->
+    <script src="/static/js/jsmpeg.min.js"></script>
+
+    <script>
+      const cameraId = "test-camera"; // change as needed
+      // const wsUrl = `ws://${window.location.hostname}:8000/stream/${cameraId}`; // Dev setup
+      const wsUrl = `wss://${window.location.hostname}/stream/${cameraId}`; // Home Server setup
+      const canvas = document.getElementById("videoCanvas");
+      console.log("Attempting to initialize JSMpeg player...");
+      console.log("WebSocket URL:", wsUrl);
+      console.log("Canvas element:", canvas);
+
+      const player = new JSMpeg.Player(wsUrl, {
+        canvas: canvas,
+        videoBufferSize: 1024 * 1024, // 1MB
+        autoplay: true,
+        audio: false,
+        onSourceEstablished: function (source) {
+          console.log("JSMpeg: Source established", source);
+        },
+        onPlay: function (player) {
+          console.log("JSMpeg: Playback started", player);
+        },
+        onPause: function (player) {
+          console.log("JSMpeg: Playback paused", player);
+        },
+        onEnded: function (player) {
+          console.log("JSMpeg: Playback ended", player);
+        },
+        onStalled: function (player) {
+          console.log("JSMpeg: Playback stalled", player);
+        },
+        onSourceCompleted: function (source) {
+          console.log("JSMpeg: Source completed", source);
+        },
+        // Consider adding a 'onerror' or similar if the library supports it directly in options
+        // or wrapping the new JSMpeg.Player in a try...catch
+      });
+      console.log("JSMpeg player instance:", player);
+
+      // Additional check for WebSocket connection issues outside of JSMpeg's direct handlers
+      const ws = new WebSocket(wsUrl); // Create a separate WebSocket for logging connection events
+      ws.onopen = function () {
+        console.log("Raw WebSocket: Connection opened");
+        ws.close(); // Close it immediately, just for testing the connection
+      };
+      ws.onerror = function (event) {
+        console.error("Raw WebSocket: Error observed:", event);
+      };
+      ws.onclose = function (event) {
+        console.log(
+          "Raw WebSocket: Connection closed. Code:",
+          event.code,
+          "Reason:",
+          event.reason
+        );
+      };
+    </script>
+  </body>
+</html>

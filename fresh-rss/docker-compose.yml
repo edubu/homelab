@@ -1,0 +1,22 @@
+services:
+  freshrss:
+    image: lscr.io/linuxserver/freshrss:latest
+    container_name: freshrss
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./config:/config
+    # ports:
+    #   - 1200:80
+    restart: unless-stopped
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    networks:
+      - caddy_net
+
+networks:
+  caddy_net:
+    external: true

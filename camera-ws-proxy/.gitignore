@@ -1,0 +1,4 @@
+/venv
+/streams
+/.pytest_cache
+/src/__pycache__

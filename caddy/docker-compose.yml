@@ -1,0 +1,31 @@
+version: "3.5"
+
+services:
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+      - /etc/caddy/certs:/etc/caddy/certs:ro # Mount certs read-only
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8222:8222"
+    environment:
+      - CADDY_USERNAME=${CADDY_USERNAME}
+      - CADDY_PASSWORD_HASH=${CADDY_PASSWORD_HASH}
+      - TAILNET_DOMAIN=${TAILNET_DOMAIN}
+    networks:
+      caddy_net:
+        ipv4_address: 172.55.0.2
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  caddy_net:
+    external: true

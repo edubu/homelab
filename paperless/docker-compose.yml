@@ -1,0 +1,81 @@
+# Docker Compose file for running paperless from the Docker Hub.
+# This file contains everything paperless needs to run.
+# Paperless supports amd64, arm and arm64 hardware.
+#
+# All compose files of paperless configure paperless in the following way:
+#
+# - Paperless is (re)started on system boot, if it was running before shutdown.
+# - Docker volumes for storing data are managed by Docker.
+# - Folders for importing and exporting files are created in the same directory
+#   as this file and mounted to the correct folders inside the container.
+# - Paperless listens on port 8000.
+#
+# In addition to that, this Docker Compose file adds the following optional
+# configurations:
+#
+# - Instead of SQLite (default), PostgreSQL is used as the database server.
+#
+# To install and update paperless with this file, do the following:
+#
+# - Copy this file as 'docker-compose.yml' and the files 'docker-compose.env'
+#   and '.env' into a folder.
+# - Run 'docker compose pull'.
+# - Run 'docker compose up -d'.
+#
+# For more extensive installation and update instructions, refer to the
+# documentation.
+
+services:
+  broker:
+    image: docker.io/library/redis:7
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    networks:
+      - caddy_net
+
+  db:
+    image: docker.io/library/postgres:17
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file: .env
+    networks:
+      - caddy_net
+
+  webserver:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+      - broker
+    volumes:
+      - data:/usr/src/paperless/data
+      - media:/usr/src/paperless/media
+      - ./export:/usr/src/paperless/export
+      - ./consume:/usr/src/paperless/consume
+      - ./caddy_root_ca.crt:/usr/local/share/ca-certificates/caddy_root_ca.crt
+    command: >
+      sh -c "
+        update-ca-certificates &&
+        /entrypoint.sh"
+    env_file: .env
+    dns:
+      - 172.55.0.55
+    environment:
+      PAPERLESS_APPS: allauth.socialaccount.providers.openid_connect
+      PAPERLESS_SOCIALACCOUNT_PROVIDERS: ${PAPERLESS_SOCIALACCOUNT_PROVIDERS}
+      SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
+      REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
+    networks:
+      - caddy_net
+
+volumes:
+  data:
+  media:
+  pgdata:
+  redisdata:
+
+networks:
+  caddy_net:
+    external: true

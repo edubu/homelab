@@ -1,0 +1,178 @@
+openapi: 3.0.0
+info:
+  title: Camera Stream Proxy
+  description: A service that provides both WebSocket streaming and HLS transcoding for IP cameras
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3002
+    description: Local development server
+
+paths:
+  /cameras:
+    get:
+      summary: List all configured cameras
+      description: Returns a list of all configured cameras with their current streaming status
+      operationId: listCameras
+      responses:
+        '200':
+          description: List of cameras
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cameras:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CameraInfo'
+
+  /cameras/{camera_id}/hls/start:
+    post:
+      summary: Start HLS transcoding
+      description: Start FFmpeg transcoding process for a camera to generate HLS stream
+      operationId: startHls
+      parameters:
+        - name: camera_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the camera to start streaming
+      responses:
+        '200':
+          description: HLS stream started successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [started]
+                  hls_url:
+                    type: string
+                    description: URL path to the HLS playlist
+                    example: /streams/camera-1/index.m3u8
+        '404':
+          description: Camera not found
+        '400':
+          description: Camera is disabled
+        '500':
+          description: Failed to start HLS stream
+
+  /cameras/{camera_id}/hls/stop:
+    post:
+      summary: Stop HLS transcoding
+      description: Stop the FFmpeg transcoding process for a camera
+      operationId: stopHls
+      parameters:
+        - name: camera_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the camera to stop streaming
+      responses:
+        '200':
+          description: HLS stream stopped successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [stopped]
+        '404':
+          description: Camera not found
+
+  /stream/{camera_id}:
+    get:
+      summary: WebSocket stream endpoint
+      description: Connect via WebSocket to receive raw H264 stream from camera
+      operationId: streamCamera
+      parameters:
+        - name: camera_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the camera to stream
+      responses:
+        '101':
+          description: Switching protocols to WebSocket
+        '404':
+          description: Camera not found
+        '400':
+          description: Camera is disabled
+
+  /streams/{camera_id}/index.m3u8:
+    get:
+      summary: HLS playlist endpoint
+      description: Get the HLS playlist (m3u8) file for a camera. This endpoint is available after starting HLS transcoding.
+      operationId: getHlsPlaylist
+      parameters:
+        - name: camera_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the camera
+      responses:
+        '200':
+          description: HLS playlist file
+          content:
+            application/vnd.apple.mpegurl:
+              schema:
+                type: string
+                description: M3U8 playlist content
+        '404':
+          description: Playlist not found or HLS stream not started
+
+components:
+  schemas:
+    Resolution:
+      type: object
+      properties:
+        width:
+          type: integer
+          example: 1280
+        height:
+          type: integer
+          example: 720
+
+    StreamStatus:
+      type: object
+      properties:
+        websocket:
+          type: boolean
+          description: Whether the camera has an active WebSocket stream
+        hls:
+          type: boolean
+          description: Whether the camera has an active HLS stream
+
+    CameraInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          example: camera-1
+        name:
+          type: string
+          example: Living Room Camera
+        location:
+          type: string
+          example: Living Room
+        enabled:
+          type: boolean
+        resolution:
+          $ref: '#/components/schemas/Resolution'
+        status:
+          $ref: '#/components/schemas/StreamStatus'
+      required:
+        - id
+        - name
+        - enabled
+        - resolution
+        - status

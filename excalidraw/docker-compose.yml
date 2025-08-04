@@ -1,0 +1,20 @@
+services:
+  excalidraw-client:
+    image: excalidraw/excalidraw:latest
+    container_name: excalidraw-client
+    env_file: .env
+    networks:
+      - caddy_net
+    restart: unless-stopped
+
+  excalidraw-room:
+    image: excalidraw/excalidraw-room:latest
+    container_name: excalidraw-room
+    env_file: .env
+    networks:
+      - caddy_net
+    restart: unless-stopped
+
+networks:
+  caddy_net:
+    external: true

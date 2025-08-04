@@ -1,0 +1,30 @@
+services:
+  camera-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: camera-ws-proxy
+    ports:
+      - "8000:8000"
+    dns:
+      - 100.100.100.100 # Tailscale's MagicDNS IP
+      # - 8.8.8.8 # fallback DNS server - Google DNS
+    networks:
+      - camera_net
+      # - caddy_net
+    # If you need to persist HLS streams data, uncomment the following lines:
+    # volumes:
+    #   - ./streams_data:/app/streams
+    # The container needs to be able to resolve 'picamera' (if used in config.py).
+    # If 'picamera' is a hostname on your local network, you might need to
+    # add it to extra_hosts or ensure your Docker networking is set up to resolve it.
+    # Alternatively, use the direct IP address in config.py.
+
+# If you create a 'streams_data' directory on your host for the volume,
+# ensure it has the correct permissions for the user inside the Docker container (usually root or a non-root user if specified in Dockerfile).
+networks:
+  camera_net:
+    driver: bridge
+    name: camera_net
+  # caddy_net:
+  #   external: true

@@ -1,0 +1,24 @@
+version: "3.5"
+
+services:
+  minecraftbe:
+    image: 05jchambers/legendary-minecraft-geyser-floodgate:latest
+    container_name: mincraft
+    restart: "unless-stopped"
+    ports:
+      - 25565:25565
+      - 19132:19132
+      - 19132:19132/udp
+    volumes:
+      - ./data:/minecraft:rw
+    stdin_open: true
+    tty: true
+    entrypoint: ["/bin/bash", "/scripts/start.sh"]
+    environment:
+      Port: "25565"
+      BedrockPort: "19132"
+      TZ: "America/Denver"
+      BackupCount: 5
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1

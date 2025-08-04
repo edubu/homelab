@@ -1,0 +1,98 @@
+{
+    local_certs
+}
+
+# Grafana
+https://grafana.internal.com {
+    reverse_proxy grafana:3000
+}
+
+# Prometheus
+https://prometheus.internal.com {
+    reverse_proxy prometheus:9090
+}
+
+# Vaultwarden (requires HTTPS)
+https://vaultwarden.internal.com {
+    reverse_proxy vaultwarden:80
+}
+
+# Portainer
+https://portainer.internal.com {
+    reverse_proxy portainer:9000
+}
+
+https://excalidraw.internal.com {
+    reverse_proxy /ws* excalidraw-room:5000
+    reverse_proxy excalidraw-client:80
+}
+
+#Pihole External
+https://pihole-external.internal.com {
+    reverse_proxy pihole-external:80
+}
+
+#Pihole Internal
+https://pihole-internal.internal.com {
+    reverse_proxy pihole-internal:80
+}
+
+# Stirling PDF
+https://pdf.internal.com {
+    reverse_proxy stirling-pdf:8080
+}
+
+# It Tools
+https://tools.internal.com {
+    reverse_proxy it-tools:80
+}
+
+# Reactive Resume
+https://rxresume.internal.com {
+    reverse_proxy reactive-resume:3002
+}
+
+# Paperless NGX
+https://paperless.internal.com {
+    reverse_proxy webserver:8000
+}
+
+# N8N
+https://n8n.internal.com {
+    reverse_proxy n8n:5678
+}
+
+# Custom Camera Proxies
+https://camerawsproxy.internal.com {
+    reverse_proxy camera-ws-proxy:8000
+}
+
+# Dashboard frontend
+https://dashboard.internal.com {
+    reverse_proxy dashboard-frontend:3000
+}
+
+# Fresh RSS
+https://freshrss.internal.com {
+    reverse_proxy freshrss:80
+}
+
+# Minio
+https://minio.internal.com {
+    reverse_proxy minio:9000
+}
+
+#Minio Console
+https://minio-console.internal.com {
+    reverse_proxy minio:9001
+}
+
+# Grist
+https://grist.internal.com {
+    reverse_proxy grist:8484
+}
+
+#Authentik
+https://authentik.internal.com {
+    reverse_proxy authentik-server-1:9000
+}

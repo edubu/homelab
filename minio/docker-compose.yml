@@ -1,0 +1,18 @@
+services:
+  minio:
+    image: bitnami/minio:latest
+    container_name: minio
+    env_file:
+      - .env
+    command: server /data1 /data2 /data3 --console-address ":9001"
+    volumes:
+      - ./minio_data1:/data1
+      - ./minio_data2:/data2
+      - ./minio_data3:/data3
+    user: "1001:1001"
+    networks:
+      - caddy_net
+
+networks:
+  caddy_net:
+    external: true

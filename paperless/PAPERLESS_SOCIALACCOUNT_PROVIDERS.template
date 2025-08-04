@@ -1,0 +1,15 @@
+{
+  "openid_connect": {
+    "APPS": [
+      {
+        "provider_id": "authentik",
+        "name": "Authentik",
+        "client_id": "${OIDC_CLIENT_ID}",
+        "secret": "${OIDC_CLIENT_SECRET}",
+        "settings": {
+          "server_url": "${OIDC_CONFIG_ENDPOINT}"        }
+      }
+    ],
+    "OAUTH_PKCE_ENABLED": "True"
+  }
+}

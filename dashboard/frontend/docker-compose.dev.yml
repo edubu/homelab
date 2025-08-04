@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    volumes:
+      - ./:/app:cached # Mount code for hot reload
+      - /app/node_modules # Prevent host node_modules from clobbering container's
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true # Needed for file watching in Docker (especially Linux)
+    command: npm run dev

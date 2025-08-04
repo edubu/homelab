@@ -1,0 +1,77 @@
+services:
+  grist:
+    image: gristlabs/grist:latest
+    environment:
+      # Postgres database setup
+      TYPEORM_DATABASE: ${TYPEORM_DATABASE}
+      TYPEORM_USERNAME: ${TYPEORM_USERNAME}
+      TYPEORM_HOST: ${TYPEORM_HOST}
+      TYPEORM_LOGGING: ${TYPEORM_LOGGING}
+      TYPEORM_PASSWORD: ${DATABASE_PASSWORD}
+      TYPEORM_PORT: ${TYPEORM_PORT}
+      TYPEORM_TYPE: ${TYPEORM_TYPE}
+
+      # Redis setup
+      REDIS_URL: ${REDIS_URL}
+
+      # MinIO setup. This requires the bucket set up on the MinIO instance with versioning enabled.
+      GRIST_DOCS_MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      GRIST_DOCS_MINIO_SECRET_KEY: ${MINIO_PASSWORD}
+      GRIST_DOCS_MINIO_USE_SSL: ${GRIST_DOCS_MINIO_USE_SSL}
+      GRIST_DOCS_MINIO_BUCKET: ${GRIST_DOCS_MINIO_BUCKET}
+      GRIST_DOCS_MINIO_ENDPOINT: ${GRIST_DOCS_MINIO_ENDPOINT}
+      GRIST_DOCS_MINIO_PORT: ${GRIST_DOCS_MINIO_PORT}
+
+    volumes:
+      # Where to store persistent data, such as documents.
+      - ${PERSIST_DIR}/grist:/persist
+    # ports:
+    #   - 8484:8484
+    networks:
+      - caddy_net
+      - grist_internal
+    depends_on:
+      - grist-db
+      - grist-redis
+      - minio-setup
+
+  grist-db:
+    image: postgres:alpine
+    environment:
+        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - ${PERSIST_DIR}/postgres:/var/lib/postgresql/data
+    networks:
+      - grist_internal
+
+  grist-redis:
+    image: redis:alpine
+    volumes:
+      - ${PERSIST_DIR}/redis:/data
+    networks:
+      - grist_internal
+
+  # This sets up the buckets required in MinIO. It is only needed to make this example work.
+  # It isn't necessary for deployment and can be safely removed.
+  minio-setup:
+    image: minio/mc
+    environment:
+      MINIO_PASSWORD: ${MINIO_PASSWORD}
+    restart: on-failure
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 $MINIO_ROOT_USER '$MINIO_PASSWORD';
+      /usr/bin/mc mb myminio/grist-docs;
+      /usr/bin/mc anonymous set public myminio/grist-docs;
+      /usr/bin/mc version enable myminio/grist-docs;
+      "
+    networks:
+      - caddy_net
+
+networks:
+  caddy_net:
+    external: true
+  grist_internal:
+    driver: bridge

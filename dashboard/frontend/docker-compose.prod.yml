@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  frontend:
+    container_name: dashboard-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /app
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+    restart: unless-stopped
+    networks:
+      - app_network
+      - caddy_net
+
+networks:
+  app_network:
+    driver: bridge
+    name: app_network
+  caddy_net:
+    external: true

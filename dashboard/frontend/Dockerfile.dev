@@ -1,0 +1,10 @@
+# Dockerfile.dev
+FROM node:24-alpine3.21
+
+WORKDIR /app
+
+# Install dependencies separately to avoid node_modules overwrite by bind mount
+COPY package*.json ./
+RUN npm install
+
+CMD ["npm", "run", "dev"]

@@ -1,0 +1,23 @@
+services:
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole-internal
+    env_file: .env
+    volumes:
+      - ./pihole/etc-pihole/:/etc/pihole/
+      - ./pihole/etc-dnsmasq.d/:/etc/dnsmasq.d/
+    # ports:
+      # - "53:53/tcp"
+      # - "53:53/udp"
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN  # Needed for DNS
+    networks:
+      caddy_net:
+        ipv4_address: 172.55.0.55
+      # pihole_net:
+
+networks:
+  # pihole_net:
+  caddy_net:
+    external: true
